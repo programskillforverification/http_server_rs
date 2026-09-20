@@ -46,6 +46,25 @@ pub enum ConnError {
     Write(#[source] io::Error),
 }
 
+/// Why a byte slice could not be parsed as an HTTP response.
+#[derive(Debug, Error)]
+pub enum ParseError {
+    #[error("headers are not terminated by a blank line")]
+    IncompleteHead,
+
+    #[error("headers are not valid UTF-8")]
+    NotUtf8(#[from] std::str::Utf8Error),
+
+    #[error("malformed status line: {0:?}")]
+    StatusLine(String),
+
+    #[error("{0} is not a valid status code")]
+    StatusCode(u16),
+
+    #[error("malformed header line: {0:?}")]
+    HeaderLine(String),
+}
+
 /// Formats an error with its full source chain, e.g. `read failed: Connection reset by peer`.
 pub(crate) fn report(err: &dyn std::error::Error) -> String {
     let mut msg = err.to_string();
